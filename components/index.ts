@@ -10,6 +10,7 @@ export { default as ChatSidebar } from "./chat/ChatSidebar";
 export { default as ChatWindow } from "./chat/ChatWindow";
 export { default as ChatInput } from "./chat/ChatInput";
 export { default as MessageBubble } from "./chat/MessageBubble";
+export { default as ChatContainer } from "./chat/ChatContainer";
 
 // Common Components
 export { default as Avatar } from "./common/Avatar";

@@ -9,6 +9,7 @@ interface ChatState {
   setMessages: (chatId: string, messages: Message[]) => void;
   addMessage: (chatId: string, message: Message) => void;
   selectChat: (chatId: string) => void;
+  clearSelectedChat: () => void;
   getMessagesByChatId: (chatId: string) => Message[];
 }
 
@@ -33,6 +34,8 @@ export const useChatStore = create<ChatState>((set, get) => ({
     })),
 
   selectChat: (chatId) => set({ selectedChatId: chatId }),
+
+  clearSelectedChat: () => set({ selectedChatId: null }),
 
   getMessagesByChatId: (chatId) => get().messages[chatId] || [],
 }));

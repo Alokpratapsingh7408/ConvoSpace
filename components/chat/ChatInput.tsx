@@ -51,7 +51,12 @@ export default function ChatInput({ chatId }: ChatInputProps) {
   };
 
   return (
-    <div className="p-3 bg-[#202c33] dark:bg-[#111b21] border-t border-gray-700">
+    <div 
+      className="fixed bottom-0 left-0 right-0 p-3 bg-[#202c33] border-t border-gray-700 z-10 md:relative md:bottom-auto md:left-auto md:right-auto md:z-auto"
+      style={{
+        paddingBottom: "calc(0.75rem + env(safe-area-inset-bottom))",
+      }}
+    >
       <div className="flex items-end gap-2">
         <IconButton
           icon={<FiSmile size={24} />}

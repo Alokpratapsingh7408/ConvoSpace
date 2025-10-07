@@ -12,17 +12,17 @@ export default function MobileProfileView() {
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const [firstName, setFirstName] = useState(currentUser?.name || "");
-  const [email, setEmail] = useState("");
+  const [about, setAbout] = useState("Hey there! I am using ConvoSpace.");
   const [photo, setPhoto] = useState<string | null>(currentUser?.avatar || null);
   const [photoPreview, setPhotoPreview] = useState<string | undefined>(undefined);
   const [isSaving, setIsSaving] = useState(false);
   const [nameError, setNameError] = useState("");
-  const [emailError, setEmailError] = useState("");
+  const [aboutError, setAboutError] = useState("");
   const [showSuccess, setShowSuccess] = useState(false);
   const [successMessage, setSuccessMessage] = useState("");
 
   const initialFirstName = currentUser?.name || "";
-  const initialEmail = "";
+  const initialAbout = "Hey there! I am using ConvoSpace.";
   const initialPhoto = currentUser?.avatar || null;
 
   const isValidEmail = (email: string) => {
@@ -35,7 +35,7 @@ export default function MobileProfileView() {
 
   const hasValidChanges =
     firstName.trim() !== initialFirstName ||
-    email.trim() !== initialEmail ||
+    about.trim() !== initialAbout ||
     photo !== initialPhoto;
 
   const handleNameChange = (value: string) => {
@@ -43,9 +43,9 @@ export default function MobileProfileView() {
     setNameError("");
   };
 
-  const handleEmailChange = (value: string) => {
-    setEmail(value);
-    setEmailError("");
+  const handleAboutChange = (value: string) => {
+    setAbout(value);
+    setAboutError("");
   };
 
   const handlePhotoUpload = (file: File) => {
@@ -79,8 +79,8 @@ export default function MobileProfileView() {
       return;
     }
 
-    if (email.trim() && !isValidEmail(email.trim())) {
-      setEmailError("Invalid input");
+    if (about.trim().length > 139) {
+      setAboutError("About must be less than 139 characters");
       return;
     }
 
@@ -111,52 +111,54 @@ export default function MobileProfileView() {
         <h2 className="text-white text-lg font-medium">Edit Profile</h2>
       </div>
 
-      {/* Avatar Section */}
-      <div className="flex flex-col items-center py-6 px-4">
-        <div className="relative mb-4">
-          <div className="w-20 h-20 rounded-full overflow-hidden bg-[#00a884]/10 flex items-center justify-center">
-            {photoPreview || photo ? (
-              <img
-                src={photoPreview || photo || ""}
-                alt="Profile"
-                className="w-full h-full object-cover"
-              />
-            ) : (
-              <div className="w-full h-full bg-gradient-to-br from-blue-500 to-purple-500 flex items-center justify-center text-white text-2xl font-semibold">
-                {firstName.charAt(0).toUpperCase() || "U"}
-              </div>
-            )}
+      {/* Main Content - Centered on Desktop */}
+      <div className="max-w-2xl mx-auto">
+        {/* Avatar Section */}
+        <div className="flex flex-col items-center py-6 px-4">
+          <div className="relative mb-4">
+            <div className="w-20 h-20 md:w-28 md:h-28 rounded-full overflow-hidden bg-[#00a884]/10 flex items-center justify-center">
+              {photoPreview || photo ? (
+                <img
+                  src={photoPreview || photo || ""}
+                  alt="Profile"
+                  className="w-full h-full object-cover"
+                />
+              ) : (
+                <div className="w-full h-full bg-gradient-to-br from-blue-500 to-purple-500 flex items-center justify-center text-white text-2xl md:text-4xl font-semibold">
+                  {firstName.charAt(0).toUpperCase() || "U"}
+                </div>
+              )}
+            </div>
+            
           </div>
-          
+
+          <button
+            type="button"
+            className="flex items-center gap-2 px-4 py-2 border rounded-lg text-white bg-transparent border-[#00a884]/50 hover:bg-[#00a884]/10 active:bg-[#00a884]/20 font-medium transition-colors"
+            onClick={() => fileInputRef.current?.click()}
+          >
+            <FiCamera size={16} />
+            <span className="text-sm">Update Photo</span>
+          </button>
+
+          <input
+            type="file"
+            accept="image/*"
+            ref={fileInputRef}
+            className="hidden"
+            onChange={(e) => {
+              const file = e.target.files?.[0];
+              if (file) {
+                handlePhotoUpload(file);
+              }
+            }}
+          />
         </div>
 
-        <button
-          type="button"
-          className="flex items-center gap-2 px-4 py-2 border rounded-lg text-white bg-transparent border-[#00a884]/50 hover:bg-[#00a884]/10 active:bg-[#00a884]/20 font-medium transition-colors"
-          onClick={() => fileInputRef.current?.click()}
-        >
-          <FiCamera size={16} />
-          <span className="text-sm">Update Photo</span>
-        </button>
-
-        <input
-          type="file"
-          accept="image/*"
-          ref={fileInputRef}
-          className="hidden"
-          onChange={(e) => {
-            const file = e.target.files?.[0];
-            if (file) {
-              handlePhotoUpload(file);
-            }
-          }}
-        />
-      </div>
-
-      {/* Form Section */}
-      <div className="px-4 py-6 space-y-6">
-        {/* Name Input */}
-        <div className="relative">
+        {/* Form Section */}
+        <div className="px-4 py-6 space-y-6">
+          {/* Name Input */}
+          <div className="relative">
           <input
             className={`w-full bg-[#202c33] rounded-xl px-4 py-3 outline-none text-sm placeholder-[#8696a0] text-white border-2 transition-all ${
               nameError
@@ -173,23 +175,28 @@ export default function MobileProfileView() {
           )}
         </div>
 
-        {/* Email Input */}
+        {/* About Input */}
         <div className="relative">
-          <input
-            className={`w-full bg-[#202c33] rounded-xl px-4 py-3 outline-none text-sm placeholder-[#8696a0] text-white border-2 transition-all ${
-              emailError
+          <textarea
+            className={`w-full bg-[#202c33] rounded-xl px-4 py-3 outline-none text-sm placeholder-[#8696a0] text-white border-2 transition-all resize-none ${
+              aboutError
                 ? "border-red-500 focus:border-red-500"
                 : "border-transparent focus:border-[#00a884]"
             }`}
-            placeholder="Email (optional)"
-            value={email}
-            onChange={(e) => handleEmailChange(e.target.value)}
-            type="email"
-            autoComplete="email"
+            placeholder="About"
+            value={about}
+            onChange={(e) => handleAboutChange(e.target.value)}
+            rows={3}
+            maxLength={139}
           />
-          {emailError && (
-            <div className="mt-1 text-xs text-red-500">{emailError}</div>
-          )}
+          <div className="mt-1 flex items-center justify-between">
+            {aboutError && (
+              <div className="text-xs text-red-500">{aboutError}</div>
+            )}
+            <div className="ml-auto text-xs text-[#8696a0]">
+              {about.length}/139
+            </div>
+          </div>
         </div>
 
         {/* Phone Display */}
@@ -227,6 +234,7 @@ export default function MobileProfileView() {
             Log out
           </button>
         </div>
+      </div>
       </div>
 
       {/* Success Notification */}

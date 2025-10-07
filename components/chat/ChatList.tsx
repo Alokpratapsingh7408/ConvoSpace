@@ -11,9 +11,15 @@ import { IoCheckmarkDone } from "react-icons/io5";
 
 interface ChatListProps {
   searchQuery?: string;
+  onChatSelect?: (chatId: string) => void;
+  isMobile?: boolean;
 }
 
-export default function ChatList({ searchQuery = "" }: ChatListProps) {
+export default function ChatList({ 
+  searchQuery = "", 
+  onChatSelect,
+  isMobile = false 
+}: ChatListProps) {
   const router = useRouter();
   const { selectedChatId, selectChat } = useChatStore();
 
@@ -23,8 +29,12 @@ export default function ChatList({ searchQuery = "" }: ChatListProps) {
   });
 
   const handleChatClick = (chatId: string) => {
-    selectChat(chatId);
-    router.push(`/chat/${chatId}`);
+    if (onChatSelect) {
+      onChatSelect(chatId);
+    } else {
+      selectChat(chatId);
+      router.push(`/chat/${chatId}`);
+    }
   };
 
   return (

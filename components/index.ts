@@ -16,6 +16,7 @@ export { default as Avatar } from "./common/Avatar";
 export { default as IconButton } from "./common/IconButton";
 export { default as SearchBar } from "./common/SearchBar";
 export { default as ThemeToggle } from "./common/ThemeToggle";
+export { SuccessNotification } from "./common/SuccessNotification";
 
 // Providers
 export { default as StoreInitializer } from "./providers/StoreInitializer";

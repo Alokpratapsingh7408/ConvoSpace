@@ -94,8 +94,29 @@ export default function MainSidebar() {
                     : "text-gray-400 active:bg-[#2a3942]"
                 }`}
               >
-                {item.icon}
-                <span className="text-xs font-medium">{item.label}</span>
+                {item.id === "profile" ? (
+                  <div className="flex flex-col items-center justify-center gap-1">
+                    <div className="w-6 h-6 rounded-full overflow-hidden bg-[#00a884]/10 flex items-center justify-center">
+                      {currentUser?.avatar ? (
+                        <img
+                          src={currentUser.avatar}
+                          alt="Profile"
+                          className="w-full h-full object-cover"
+                        />
+                      ) : (
+                        <div className="w-full h-full bg-gradient-to-br from-blue-500 to-purple-500 flex items-center justify-center text-white text-xs font-semibold">
+                          {currentUser?.name?.charAt(0).toUpperCase() || "U"}
+                        </div>
+                      )}
+                    </div>
+                    <span className="text-xs font-medium">{item.label}</span>
+                  </div>
+                ) : (
+                  <>
+                    {item.icon}
+                    <span className="text-xs font-medium">{item.label}</span>
+                  </>
+                )}
               </button>
             ))}
           </nav>

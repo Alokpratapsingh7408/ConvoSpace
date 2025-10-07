@@ -197,7 +197,6 @@ export default function MobileProfileView() {
           <div className="bg-[#202c33] rounded-xl px-4 py-3 border-2 border-transparent">
             <div className="flex items-center justify-between">
               <span className="text-xs text-[#8696a0]">Phone</span>
-              <span className="text-sm text-white font-medium">{currentUser.phone}</span>
             </div>
           </div>
         )}

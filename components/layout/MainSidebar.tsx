@@ -28,9 +28,9 @@ export default function MainSidebar() {
   const router = useRouter();
   const { currentUser } = useUserStore();
 
-  // Check if we're viewing a specific chat (hide mobile nav in chat view)
-  // Match /chat/1, /chat/2, etc. but NOT /chat alone
-  const isInChatView = pathname?.match(/^\/chat\/[^/]+$/);
+  // Check if we're in chat container (hide mobile nav in any chat view)
+  // Match /chat or /chat/1, /chat/2, etc.
+  const isInChatView = pathname?.startsWith('/chat');
 
   const isActive = (path: string) => {
     if (path === "/chat") {

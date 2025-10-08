@@ -5,6 +5,7 @@ import { FiMessageCircle, FiUsers, FiUser } from "react-icons/fi";
 import { IoCallOutline } from "react-icons/io5";
 import Avatar from "../common/Avatar";
 import { useUserStore } from "@/store/userStore";
+import { useUIStore } from "@/store/uiStore";
 
 interface NavItem {
   id: string;
@@ -27,10 +28,14 @@ export default function MainSidebar() {
   const pathname = usePathname();
   const router = useRouter();
   const { currentUser } = useUserStore();
+  const { isMobileChatWindowOpen } = useUIStore();
 
-  // Check if we're in chat container (hide mobile nav in any chat view)
-  // Match /chat or /chat/1, /chat/2, etc.
-  const isInChatView = pathname?.startsWith('/chat');
+  // Check if we're viewing a specific chat (hide mobile nav only in chat window)
+  // Match /chat/1, /chat/2, etc. but NOT /chat alone
+  const isInChatView = pathname?.match(/^\/chat\/[^/]+$/);
+  
+  // Hide mobile nav when in ChatContainer's chat window (mobile) or desktop chat view
+  const shouldHideMobileNav = isMobileChatWindowOpen || isInChatView;
 
   const isActive = (path: string) => {
     if (path === "/chat") {
@@ -82,7 +87,7 @@ export default function MainSidebar() {
       </div>
 
       {/* Mobile Bottom Navigation - Hidden when viewing a specific chat */}
-      {!isInChatView && (
+      {!shouldHideMobileNav && (
         <div className="md:hidden fixed bottom-0 left-0 right-0 bg-[#202c33] dark:bg-[#111b21] border-t border-gray-700 z-50">
           <nav className="flex items-center justify-around h-16">
             {[...navItems, ...mobileBottomNavItems].map((item) => (

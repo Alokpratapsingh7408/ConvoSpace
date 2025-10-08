@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import { usePathname, useRouter } from "next/navigation";
 import { useChatStore } from "@/store/chatStore";
+import { useUIStore } from "@/store/uiStore";
 import ChatWindow from "./ChatWindow";
 import ChatList from "./ChatList";
 import { FiEdit3, FiSearch, FiArrowLeft } from "react-icons/fi";
@@ -15,6 +16,7 @@ export default function ChatContainer({ isMobile = false }: ChatContainerProps) 
   const pathname = usePathname();
   const router = useRouter();
   const { selectedChatId, selectChat, clearSelectedChat } = useChatStore();
+  const { setMobileChatWindowOpen } = useUIStore();
   const [searchQuery, setSearchQuery] = useState("");
   const [isSearchOpen, setIsSearchOpen] = useState(false);
   
@@ -37,6 +39,21 @@ export default function ChatContainer({ isMobile = false }: ChatContainerProps) 
       }
     }
   }, [urlChatId, selectChat, clearSelectedChat, isMobile]);
+
+  // Mobile: Update UI store when chat window is open/closed
+  useEffect(() => {
+    if (isMobile) {
+      const isWindowOpen = mobileView !== 'list';
+      setMobileChatWindowOpen(isWindowOpen);
+    }
+    
+    // Cleanup when component unmounts
+    return () => {
+      if (isMobile) {
+        setMobileChatWindowOpen(false);
+      }
+    };
+  }, [isMobile, mobileView, setMobileChatWindowOpen]);
 
   const handleChatSelect = (chatId: string) => {
     if (isMobile) {

@@ -6,7 +6,9 @@ import { useChatStore } from "@/store/chatStore";
 import { useUIStore } from "@/store/uiStore";
 import ChatWindow from "./ChatWindow";
 import ChatList from "./ChatList";
+import SearchBar from "../common/SearchBar";
 import { FiEdit3, FiSearch, FiArrowLeft } from "react-icons/fi";
+import { QrCode, Camera, UserRoundPlus, MoreVertical } from "lucide-react";
 
 interface ChatContainerProps {
   isMobile?: boolean;
@@ -90,39 +92,34 @@ export default function ChatContainer({ isMobile = false }: ChatContainerProps) 
         {/* Show List when mobileView is 'list' */}
         {!activeChatId && (
           <div className="w-full h-full flex flex-col">
-            {/* Mobile Header */}
-            <div className="bg-[#202c33] px-4 py-3 border-b border-gray-700/50 flex-shrink-0">
-              <div className="flex items-center justify-between mb-3">
-                <h1 className="text-white text-xl font-medium">Chats</h1>
-                <div className="flex items-center gap-2">
-                  <button
-                    onClick={() => setIsSearchOpen(!isSearchOpen)}
-                    className="w-9 h-9 flex items-center justify-center text-gray-300 hover:bg-[#2a3942] rounded-full transition-colors active:scale-95"
-                  >
-                    <FiSearch size={20} />
-                  </button>
-                  <button
-                    onClick={handleNewChat}
-                    className="w-9 h-9 flex items-center justify-center text-gray-300 hover:bg-[#2a3942] rounded-full transition-colors active:scale-95"
-                  >
-                    <FiEdit3 size={20} />
-                  </button>
+            {/* Mobile Header - TopBar Style */}
+            <div className="px-4 py-4 flex-shrink-0">
+              <div className="flex items-center justify-between">
+                <h1 className="text-2xl font-semibold tracking-tight text-white">ConvoSpace</h1>
+                <div className="flex items-center gap-3">
+                  {/* <IconButton ariaLabel="QR code" onClick={() => alert("QR code scanner coming soon!")}>
+                    <QrCode className="size-5" />
+                  </IconButton> */}
+                  {/* <IconButton ariaLabel="Camera" onClick={() => alert("Camera coming soon!")}>
+                    <Camera className="size-5" />
+                  </IconButton> */}
+                  <IconButton ariaLabel="New contact" onClick={() => alert("Add new contact coming soon!")}>
+                    <UserRoundPlus className="size-5" />
+                  </IconButton>
+                  <IconButton ariaLabel="Menu" onClick={() => alert("Menu coming soon!")}>
+                    <MoreVertical className="size-5" />
+                  </IconButton>
                 </div>
               </div>
+            </div>
 
-              {/* Search Bar */}
-              {isSearchOpen && (
-                <div className="mt-2">
-                  <input
-                    type="text"
-                    placeholder="Search chats..."
-                    value={searchQuery}
-                    onChange={(e) => setSearchQuery(e.target.value)}
-                    className="w-full bg-[#2a3942] text-white placeholder-gray-400 px-4 py-2.5 rounded-lg outline-none focus:ring-2 focus:ring-[#00a884] text-sm"
-                    autoFocus
-                  />
-                </div>
-              )}
+            {/* Search Bar Section */}
+            <div className="px-4 pb-3 flex-shrink-0">
+              <SearchBar 
+                placeholder="Search or start new chat"
+                value={searchQuery}
+                onChange={setSearchQuery}
+              />
             </div>
 
             {/* Mobile Chat List */}
@@ -224,5 +221,26 @@ export default function ChatContainer({ isMobile = false }: ChatContainerProps) 
         )}
       </div>
     </div>
+  );
+}
+
+// IconButton Component
+function IconButton({ 
+  children, 
+  ariaLabel, 
+  onClick 
+}: { 
+  children: React.ReactNode; 
+  ariaLabel: string;
+  onClick?: () => void;
+}) {
+  return (
+    <button
+      aria-label={ariaLabel}
+      onClick={onClick}
+      className="inline-flex size-9 items-center justify-center rounded-full text-gray-300 hover:bg-[#2a3942] hover:text-white transition-colors active:scale-95"
+    >
+      {children}
+    </button>
   );
 }

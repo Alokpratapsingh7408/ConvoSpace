@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useMemo } from "react";
 import { useChatStore } from "@/store/chatStore";
 import { useUserStore } from "@/store/userStore";
 import { mockMessages, mockUsers } from "@/lib/mockData";
@@ -10,14 +10,15 @@ import ChatInput from "./ChatInput";
 
 interface ChatWindowProps {
   chatId: string;
+  onBack?: () => void;
 }
 
-export default function ChatWindow({ chatId }: ChatWindowProps) {
+export default function ChatWindow({ chatId, onBack }: ChatWindowProps) {
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const { messages, setMessages } = useChatStore();
   const { currentUser } = useUserStore();
 
-  const chatMessages = messages[chatId] || [];
+  const chatMessages = useMemo(() => messages[chatId] || [], [messages, chatId]);
 
   useEffect(() => {
     // Load mock messages for this chat
@@ -35,7 +36,7 @@ export default function ChatWindow({ chatId }: ChatWindowProps) {
 
   return (
     <div className="w-full h-full flex flex-col bg-[#0b141a] relative">
-      <ChatHeader user={otherUser} />
+      <ChatHeader user={otherUser} onBack={onBack} />
 
       {/* Messages Area with WhatsApp-style background */}
       <div

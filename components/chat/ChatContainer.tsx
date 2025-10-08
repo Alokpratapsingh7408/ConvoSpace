@@ -14,41 +14,62 @@ interface ChatContainerProps {
 export default function ChatContainer({ isMobile = false }: ChatContainerProps) {
   const pathname = usePathname();
   const router = useRouter();
-  const { selectChat, clearSelectedChat } = useChatStore();
+  const { selectedChatId, selectChat, clearSelectedChat } = useChatStore();
   const [searchQuery, setSearchQuery] = useState("");
   const [isSearchOpen, setIsSearchOpen] = useState(false);
   
-  // Extract chat ID from URL - SINGLE SOURCE OF TRUTH
+  // For mobile: Use ONLY state, NO routing
+  const [mobileView, setMobileView] = useState<'list' | string>('list');
+  
+  // Extract chat ID from URL for desktop only
   const chatIdMatch = pathname?.match(/^\/chat\/(.+)$/);
   const urlChatId = chatIdMatch ? chatIdMatch[1] : null;
 
-  // Sync store with URL (for other components that need it)
+  // Desktop: Sync store with URL
   useEffect(() => {
-    if (urlChatId) {
-      selectChat(urlChatId);
-    } else {
-      clearSelectedChat();
+    if (!isMobile) {
+      if (urlChatId) {
+        selectChat(urlChatId);
+      } else {
+        clearSelectedChat();
+      }
     }
-  }, [urlChatId, selectChat, clearSelectedChat]);
+  }, [urlChatId, selectChat, clearSelectedChat, isMobile]);
 
   const handleChatSelect = (chatId: string) => {
-    router.push(`/chat/${chatId}`);
+    if (isMobile) {
+      // Mobile: NO routing, just state change
+      setMobileView(chatId);
+      selectChat(chatId);
+    } else {
+      // Desktop: Use routing
+      router.push(`/chat/${chatId}`);
+    }
   };
 
   const handleBackToList = () => {
-    router.push("/chat");
+    if (isMobile) {
+      // Mobile: NO routing, just state change
+      setMobileView('list');
+      clearSelectedChat();
+    } else {
+      // Desktop: Use routing
+      router.push("/chat");
+    }
   };
 
   const handleNewChat = () => {
     alert("Start new chat coming soon!");
   };
 
-  // MOBILE: Direct URL rendering - NO STATE, NO FLICKER
+  // MOBILE: Pure state, NO routing
   if (isMobile) {
+    const activeChatId = mobileView !== 'list' ? mobileView : null;
+    
     return (
       <div className="w-full h-full bg-[#0b141a]">
-        {/* Show List when NO chat ID in URL */}
-        {!urlChatId && (
+        {/* Show List when mobileView is 'list' */}
+        {!activeChatId && (
           <div className="w-full h-full flex flex-col">
             {/* Mobile Header */}
             <div className="bg-[#202c33] px-4 py-3 border-b border-gray-700/50 flex-shrink-0">
@@ -96,10 +117,10 @@ export default function ChatContainer({ isMobile = false }: ChatContainerProps) 
           </div>
         )}
 
-        {/* Show Chat Window when chat ID in URL */}
-        {urlChatId && (
+        {/* Show Chat Window when chat is selected */}
+        {activeChatId && (
           <div className="w-full h-full">
-            <ChatWindow chatId={urlChatId} />
+            <ChatWindow chatId={activeChatId} onBack={handleBackToList} />
           </div>
         )}
       </div>

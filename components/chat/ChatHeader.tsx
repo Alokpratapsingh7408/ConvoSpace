@@ -9,14 +9,19 @@ import { User } from "@/types/chat";
 
 interface ChatHeaderProps {
   user: User;
+  onBack?: () => void;
 }
 
-export default function ChatHeader({ user }: ChatHeaderProps) {
+export default function ChatHeader({ user, onBack }: ChatHeaderProps) {
   const [showSearch, setShowSearch] = useState(false);
   const router = useRouter();
 
   const handleBack = () => {
-    router.push("/chat");
+    if (onBack) {
+      onBack();
+    } else {
+      router.push("/chat");
+    }
   };
 
   const handleVideoCall = () => {

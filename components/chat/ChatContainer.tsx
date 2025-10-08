@@ -24,6 +24,8 @@ export default function ChatContainer({ isMobile = false }: ChatContainerProps) 
   // Extract chat ID from URL for desktop only
   const chatIdMatch = pathname?.match(/^\/chat\/(.+)$/);
   const urlChatId = chatIdMatch ? chatIdMatch[1] : null;
+  
+  console.log('ChatContainer Debug:', { isMobile, pathname, urlChatId, selectedChatId });
 
   // Desktop: Sync store with URL
   useEffect(() => {
@@ -179,8 +181,8 @@ export default function ChatContainer({ isMobile = false }: ChatContainerProps) 
 
       {/* Desktop Main Content */}
       <div className="flex-1">
-        {urlChatId ? (
-          <ChatWindow chatId={urlChatId} />
+        {selectedChatId || urlChatId ? (
+          <ChatWindow chatId={selectedChatId || urlChatId!} />
         ) : (
           // Default welcome screen
           <div className="flex items-center justify-center h-full bg-[#0b141a]">

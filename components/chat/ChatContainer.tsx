@@ -14,30 +14,28 @@ interface ChatContainerProps {
 export default function ChatContainer({ isMobile = false }: ChatContainerProps) {
   const pathname = usePathname();
   const router = useRouter();
-  const { selectedChatId, selectChat, clearSelectedChat } = useChatStore();
+  const { selectChat, clearSelectedChat } = useChatStore();
   const [searchQuery, setSearchQuery] = useState("");
   const [isSearchOpen, setIsSearchOpen] = useState(false);
-
-  // Extract chat ID from URL
+  
+  // Extract chat ID from URL - SINGLE SOURCE OF TRUTH
   const chatIdMatch = pathname?.match(/^\/chat\/(.+)$/);
   const urlChatId = chatIdMatch ? chatIdMatch[1] : null;
 
-  // Sync URL with store state
+  // Sync store with URL (for other components that need it)
   useEffect(() => {
-    if (urlChatId && urlChatId !== selectedChatId) {
+    if (urlChatId) {
       selectChat(urlChatId);
-    } else if (!urlChatId && selectedChatId) {
+    } else {
       clearSelectedChat();
     }
-  }, [urlChatId, selectedChatId, selectChat, clearSelectedChat]);
+  }, [urlChatId, selectChat, clearSelectedChat]);
 
   const handleChatSelect = (chatId: string) => {
-    selectChat(chatId);
     router.push(`/chat/${chatId}`);
   };
 
   const handleBackToList = () => {
-    clearSelectedChat();
     router.push("/chat");
   };
 
@@ -45,63 +43,65 @@ export default function ChatContainer({ isMobile = false }: ChatContainerProps) 
     alert("Start new chat coming soon!");
   };
 
-  // Mobile View Logic
+  // MOBILE: Direct URL rendering - NO STATE, NO FLICKER
   if (isMobile) {
-    // If chat is selected, show full-screen chat window
-    if (selectedChatId && urlChatId) {
-      return (
-        <div className="w-full h-full flex flex-col relative overflow-hidden">
-          <ChatWindow chatId={selectedChatId} />
-        </div>
-      );
-    }
-
-    // Otherwise, show chat list
     return (
-      <div className="w-full h-full bg-[#0b141a] flex flex-col">
-        {/* Mobile Header */}
-        <div className="bg-[#202c33] px-4 py-3 border-b border-gray-700/50 flex-shrink-0">
-          <div className="flex items-center justify-between mb-3">
-            <h1 className="text-white text-xl font-medium">Chats</h1>
-            <div className="flex items-center gap-2">
-              <button
-                onClick={() => setIsSearchOpen(!isSearchOpen)}
-                className="w-9 h-9 flex items-center justify-center text-gray-300 hover:bg-[#2a3942] rounded-full transition-colors active:scale-95"
-              >
-                <FiSearch size={20} />
-              </button>
-              <button
-                onClick={handleNewChat}
-                className="w-9 h-9 flex items-center justify-center text-gray-300 hover:bg-[#2a3942] rounded-full transition-colors active:scale-95"
-              >
-                <FiEdit3 size={20} />
-              </button>
-            </div>
-          </div>
+      <div className="w-full h-full bg-[#0b141a]">
+        {/* Show List when NO chat ID in URL */}
+        {!urlChatId && (
+          <div className="w-full h-full flex flex-col">
+            {/* Mobile Header */}
+            <div className="bg-[#202c33] px-4 py-3 border-b border-gray-700/50 flex-shrink-0">
+              <div className="flex items-center justify-between mb-3">
+                <h1 className="text-white text-xl font-medium">Chats</h1>
+                <div className="flex items-center gap-2">
+                  <button
+                    onClick={() => setIsSearchOpen(!isSearchOpen)}
+                    className="w-9 h-9 flex items-center justify-center text-gray-300 hover:bg-[#2a3942] rounded-full transition-colors active:scale-95"
+                  >
+                    <FiSearch size={20} />
+                  </button>
+                  <button
+                    onClick={handleNewChat}
+                    className="w-9 h-9 flex items-center justify-center text-gray-300 hover:bg-[#2a3942] rounded-full transition-colors active:scale-95"
+                  >
+                    <FiEdit3 size={20} />
+                  </button>
+                </div>
+              </div>
 
-          {/* Search Bar */}
-          {isSearchOpen && (
-            <div className="mt-2 animate-in slide-in-from-top-2 duration-200">
-              <input
-                type="text"
-                placeholder="Search chats..."
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                className="w-full bg-[#2a3942] text-white placeholder-gray-400 px-4 py-2.5 rounded-lg outline-none focus:ring-2 focus:ring-[#00a884] text-sm"
-                autoFocus
+              {/* Search Bar */}
+              {isSearchOpen && (
+                <div className="mt-2">
+                  <input
+                    type="text"
+                    placeholder="Search chats..."
+                    value={searchQuery}
+                    onChange={(e) => setSearchQuery(e.target.value)}
+                    className="w-full bg-[#2a3942] text-white placeholder-gray-400 px-4 py-2.5 rounded-lg outline-none focus:ring-2 focus:ring-[#00a884] text-sm"
+                    autoFocus
+                  />
+                </div>
+              )}
+            </div>
+
+            {/* Mobile Chat List */}
+            <div className="flex-1 overflow-hidden">
+              <ChatList 
+                searchQuery={searchQuery} 
+                onChatSelect={handleChatSelect}
+                isMobile={true}
               />
             </div>
-          )}
-        </div>
+          </div>
+        )}
 
-        {/* Mobile Chat List */}
-        <div className="flex-1 overflow-hidden">
-          <ChatList 
-            searchQuery={searchQuery} 
-            onChatSelect={handleChatSelect}
-            isMobile={true}
-          />
-        </div>
+        {/* Show Chat Window when chat ID in URL */}
+        {urlChatId && (
+          <div className="w-full h-full">
+            <ChatWindow chatId={urlChatId} />
+          </div>
+        )}
       </div>
     );
   }
@@ -158,8 +158,8 @@ export default function ChatContainer({ isMobile = false }: ChatContainerProps) 
 
       {/* Desktop Main Content */}
       <div className="flex-1">
-        {selectedChatId && urlChatId ? (
-          <ChatWindow chatId={selectedChatId} />
+        {urlChatId ? (
+          <ChatWindow chatId={urlChatId} />
         ) : (
           // Default welcome screen
           <div className="flex items-center justify-center h-full bg-[#0b141a]">

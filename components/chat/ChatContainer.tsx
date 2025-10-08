@@ -21,7 +21,6 @@ export default function ChatContainer({ isMobile = false }: ChatContainerProps) 
   const { setMobileChatWindowOpen } = useUIStore();
   const [searchQuery, setSearchQuery] = useState("");
   const [isSearchOpen, setIsSearchOpen] = useState(false);
-  const [isHydrated, setIsHydrated] = useState(false);
   
   // For mobile: Use ONLY state, NO routing
   const [mobileView, setMobileView] = useState<'list' | string>('list');
@@ -31,11 +30,6 @@ export default function ChatContainer({ isMobile = false }: ChatContainerProps) 
   const urlChatId = chatIdMatch ? chatIdMatch[1] : null;
   
   console.log('ChatContainer Debug:', { isMobile, pathname, urlChatId, selectedChatId });
-
-  // Hydration check to prevent flicker
-  useEffect(() => {
-    setIsHydrated(true);
-  }, []);
 
   // Desktop: Sync store with URL
   useEffect(() => {
@@ -88,15 +82,6 @@ export default function ChatContainer({ isMobile = false }: ChatContainerProps) 
   const handleNewChat = () => {
     alert("Start new chat coming soon!");
   };
-
-  // Prevent flickering on initial load by showing nothing until hydrated
-  if (!isHydrated) {
-    return (
-      <div className="w-full h-full bg-[#0b141a] flex items-center justify-center">
-        <div className="text-gray-500">Loading...</div>
-      </div>
-    );
-  }
 
   // MOBILE: Pure state, NO routing
   if (isMobile) {

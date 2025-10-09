@@ -3,6 +3,7 @@
 import { use } from "react";
 import AppLayout from "@/components/layout/AppLayout";
 import ChatContainer from "@/components/chat/ChatContainer";
+import ProtectedRoute from "@/components/common/ProtectedRoute";
 import { useIsMobile } from "@/hooks/useMediaQuery";
 
 interface ChatDetailPageProps {
@@ -14,10 +15,12 @@ export default function ChatDetailPage({ params }: ChatDetailPageProps) {
   const isMobile = useIsMobile();
   
   return (
-    <AppLayout>
-      <div className="w-full h-full">
-        <ChatContainer isMobile={isMobile} />
-      </div>
-    </AppLayout>
+    <ProtectedRoute>
+      <AppLayout>
+        <div className="w-full h-full">
+          <ChatContainer isMobile={isMobile} />
+        </div>
+      </AppLayout>
+    </ProtectedRoute>
   );
 }

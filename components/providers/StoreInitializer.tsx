@@ -4,17 +4,19 @@ import { useEffect } from "react";
 import { useUserStore } from "@/store/userStore";
 
 export default function StoreInitializer() {
-  const { setCurrentUser } = useUserStore();
+  const { setCurrentUser, currentUser, isHydrated } = useUserStore();
 
   useEffect(() => {
-    // Initialize mock current user
-    setCurrentUser({
-      id: "1",
-      name: "You",
-      email: "you@example.com",
-      status: "online",
-    });
-  }, [setCurrentUser]);
+    // Only initialize mock user if no user exists after hydration
+    if (isHydrated && !currentUser) {
+      setCurrentUser({
+        id: "1",
+        name: "You",
+        email: "you@example.com",
+        status: "online",
+      });
+    }
+  }, [setCurrentUser, currentUser, isHydrated]);
 
   return null;
 }

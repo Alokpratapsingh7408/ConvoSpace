@@ -22,30 +22,24 @@ export default function ChatContainer({ isMobile = false }: ChatContainerProps) 
   const [searchQuery, setSearchQuery] = useState("");
   const [isSearchOpen, setIsSearchOpen] = useState(false);
   
-  // For mobile: Use ONLY state, NO routing
-  const [mobileView, setMobileView] = useState<'list' | string>('list');
-  
-  // Extract chat ID from URL for desktop only
+  // Extract chat ID from URL on initial load
   const chatIdMatch = pathname?.match(/^\/chat\/(.+)$/);
   const urlChatId = chatIdMatch ? chatIdMatch[1] : null;
   
   console.log('ChatContainer Debug:', { isMobile, pathname, urlChatId, selectedChatId });
 
-  // Desktop: Sync store with URL
+  // Sync store with URL ONLY on initial mount (for deep linking)
   useEffect(() => {
-    if (!isMobile) {
-      if (urlChatId) {
-        selectChat(urlChatId);
-      } else {
-        clearSelectedChat();
-      }
+    if (urlChatId && !selectedChatId) {
+      selectChat(urlChatId);
     }
-  }, [urlChatId, selectChat, clearSelectedChat, isMobile]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []); // Empty deps - only run on mount for deep linking
 
   // Mobile: Update UI store when chat window is open/closed
   useEffect(() => {
     if (isMobile) {
-      const isWindowOpen = mobileView !== 'list';
+      const isWindowOpen = !!selectedChatId;
       setMobileChatWindowOpen(isWindowOpen);
     }
     
@@ -55,42 +49,32 @@ export default function ChatContainer({ isMobile = false }: ChatContainerProps) 
         setMobileChatWindowOpen(false);
       }
     };
-  }, [isMobile, mobileView, setMobileChatWindowOpen]);
+  }, [isMobile, selectedChatId, setMobileChatWindowOpen]);
 
   const handleChatSelect = (chatId: string) => {
-    if (isMobile) {
-      // Mobile: NO routing, just state change
-      setMobileView(chatId);
-      selectChat(chatId);
-    } else {
-      // Desktop: Use routing
-      router.push(`/chat/${chatId}`);
-    }
+    // Both mobile and desktop: Use state, update URL WITHOUT navigation
+    selectChat(chatId);
+    // Update URL for deep linking support without triggering re-render
+    window.history.replaceState(null, '', `/chat/${chatId}`);
   };
 
   const handleBackToList = () => {
-    if (isMobile) {
-      // Mobile: NO routing, just state change
-      setMobileView('list');
-      clearSelectedChat();
-    } else {
-      // Desktop: Use routing
-      router.push("/chat");
-    }
+    // Both mobile and desktop: Use state, update URL WITHOUT navigation
+    clearSelectedChat();
+    // Update URL for deep linking support without triggering re-render
+    window.history.replaceState(null, '', '/chat');
   };
 
   const handleNewChat = () => {
     alert("Start new chat coming soon!");
   };
 
-  // MOBILE: Pure state, NO routing
+  // MOBILE VIEW: Use state-based rendering
   if (isMobile) {
-    const activeChatId = mobileView !== 'list' ? mobileView : null;
-    
     return (
       <div className="w-full h-full bg-[#0b141a]">
-        {/* Show List when mobileView is 'list' */}
-        {!activeChatId && (
+        {/* Show List when no chat is selected */}
+        {!selectedChatId && (
           <div className="w-full h-full flex flex-col">
             {/* Mobile Header - TopBar Style */}
             <div className="px-4 py-4 flex-shrink-0">
@@ -134,16 +118,16 @@ export default function ChatContainer({ isMobile = false }: ChatContainerProps) 
         )}
 
         {/* Show Chat Window when chat is selected */}
-        {activeChatId && (
+        {selectedChatId && (
           <div className="w-full h-full">
-            <ChatWindow chatId={activeChatId} onBack={handleBackToList} />
+            <ChatWindow chatId={selectedChatId} onBack={handleBackToList} />
           </div>
         )}
       </div>
     );
   }
 
-  // Desktop View Logic
+  // DESKTOP VIEW: Use state-based rendering
   return (
     <div className="flex w-full h-full">
       {/* Desktop Sidebar */}
@@ -195,8 +179,8 @@ export default function ChatContainer({ isMobile = false }: ChatContainerProps) 
 
       {/* Desktop Main Content */}
       <div className="flex-1">
-        {selectedChatId || urlChatId ? (
-          <ChatWindow chatId={selectedChatId || urlChatId!} />
+        {selectedChatId ? (
+          <ChatWindow chatId={selectedChatId} />
         ) : (
           // Default welcome screen
           <div className="flex items-center justify-center h-full bg-[#0b141a]">

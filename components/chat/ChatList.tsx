@@ -1,6 +1,5 @@
 "use client";
 
-import { useRouter } from "next/navigation";
 import { useChatStore } from "@/store/chatStore";
 import { mockChats } from "@/lib/mockData";
 import Avatar from "../common/Avatar";
@@ -19,8 +18,7 @@ export default function ChatList({
   onChatSelect,
   isMobile = false 
 }: ChatListProps) {
-  const router = useRouter();
-  const { selectedChatId, selectChat } = useChatStore();
+  const { selectedChatId } = useChatStore();
 
   const filteredChats = mockChats.filter((chat) => {
     const otherUser = chat.participants[1];
@@ -30,9 +28,6 @@ export default function ChatList({
   const handleChatClick = (chatId: string) => {
     if (onChatSelect) {
       onChatSelect(chatId);
-    } else {
-      selectChat(chatId);
-      router.push(`/chat/${chatId}`);
     }
   };
 

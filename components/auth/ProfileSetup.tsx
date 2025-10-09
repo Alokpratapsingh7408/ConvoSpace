@@ -2,49 +2,39 @@
 
 import { useState } from "react";
 import { FiArrowLeft, FiCamera } from "react-icons/fi";
-import { useUserStore } from "@/store/userStore";
 
 interface ProfileSetupProps {
   phoneNumber: string;
-  onComplete: () => void;
+  onComplete: (fullName: string, username: string) => void;
   onBack: () => void;
+  isLoading?: boolean;
 }
 
-export default function ProfileSetup({ phoneNumber, onComplete, onBack }: ProfileSetupProps) {
-  const [name, setName] = useState("");
+export default function ProfileSetup({ phoneNumber, onComplete, onBack, isLoading = false }: ProfileSetupProps) {
+  const [fullName, setFullName] = useState("");
+  const [username, setUsername] = useState("");
   const [avatar, setAvatar] = useState("");
-  const { setCurrentUser } = useUserStore();
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
 
-    if (!name.trim()) {
-      alert("Please enter your name");
+    if (!fullName.trim()) {
+      alert("Please enter your full name");
       return;
     }
 
-    // Set user in store
-    setCurrentUser({
-      id: "1",
-      name: name.trim(),
-      email: `${phoneNumber.replace(/\D/g, "")}@convospace.com`,
-      phone: phoneNumber,
-      avatar: avatar || undefined,
-      status: "online",
-    });
+    if (!username.trim()) {
+      alert("Please enter a username");
+      return;
+    }
 
-    // Save to localStorage for persistence
-    localStorage.setItem(
-      "convoSpaceUser",
-      JSON.stringify({
-        id: "1",
-        name: name.trim(),
-        phone: phoneNumber,
-        avatar: avatar || undefined,
-      })
-    );
+    // Validate username (alphanumeric and underscores only)
+    if (!/^[a-zA-Z0-9_]+$/.test(username)) {
+      alert("Username can only contain letters, numbers, and underscores");
+      return;
+    }
 
-    onComplete();
+    onComplete(fullName.trim(), username.trim());
   };
 
   const handleAvatarUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -114,19 +104,37 @@ export default function ProfileSetup({ phoneNumber, onComplete, onBack }: Profil
         {/* Name Input */}
         <div>
           <label className="block text-sm text-gray-400 mb-2">
-            Your name
+            Full name
           </label>
           <input
             type="text"
-            value={name}
-            onChange={(e) => setName(e.target.value)}
-            placeholder="Enter your name"
+            value={fullName}
+            onChange={(e) => setFullName(e.target.value)}
+            placeholder="Enter your full name"
             className="w-full bg-[#202c33] text-white px-4 py-3 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#00a884] placeholder-gray-500"
             autoFocus
             maxLength={50}
           />
           <p className="text-xs text-gray-500 mt-2">
-            This is not your username. This name will be visible to your contacts.
+            This name will be visible to your contacts.
+          </p>
+        </div>
+
+        {/* Username Input */}
+        <div>
+          <label className="block text-sm text-gray-400 mb-2">
+            Username
+          </label>
+          <input
+            type="text"
+            value={username}
+            onChange={(e) => setUsername(e.target.value.toLowerCase())}
+            placeholder="Enter a username"
+            className="w-full bg-[#202c33] text-white px-4 py-3 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#00a884] placeholder-gray-500"
+            maxLength={30}
+          />
+          <p className="text-xs text-gray-500 mt-2">
+            Username can only contain letters, numbers, and underscores.
           </p>
         </div>
 
@@ -139,10 +147,20 @@ export default function ProfileSetup({ phoneNumber, onComplete, onBack }: Profil
         {/* Submit Button */}
         <button
           type="submit"
-          disabled={!name.trim()}
+          disabled={!fullName.trim() || !username.trim() || isLoading}
           className="w-full bg-[#00a884] text-white py-3 rounded-lg font-medium hover:bg-[#06cf9c] transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
         >
-          Done →
+          {isLoading ? (
+            <span className="flex items-center justify-center gap-2">
+              <svg className="animate-spin h-5 w-5" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+              </svg>
+              Completing...
+            </span>
+          ) : (
+            "Done →"
+          )}
         </button>
 
         {/* Info Text */}

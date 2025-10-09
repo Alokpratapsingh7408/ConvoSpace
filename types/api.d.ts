@@ -14,6 +14,8 @@ export interface SendOTPRequest {
 export interface SendOTPResponse {
   phone_number: string;
   expires_at: string;
+  user_exists: boolean;
+  requires_registration: boolean;
 }
 
 export interface VerifyOTPRequest {

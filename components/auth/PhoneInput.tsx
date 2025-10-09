@@ -20,8 +20,9 @@ export default function PhoneInput({ onSubmit, isLoading = false }: PhoneInputPr
       return;
     }
 
-    const fullPhone = `${countryCode} ${phoneNumber}`;
-    onSubmit(fullPhone);
+    // Strip all formatting - send ONLY digits, no country code
+    const cleanNumber = phoneNumber.replace(/\D/g, ""); // e.g., "7408942291"
+    onSubmit(cleanNumber);
   };
 
   const formatPhoneNumber = (value: string) => {

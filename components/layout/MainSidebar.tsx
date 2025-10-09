@@ -6,6 +6,7 @@ import { IoCallOutline } from "react-icons/io5";
 import Avatar from "../common/Avatar";
 import { useUserStore } from "@/store/userStore";
 import { useUIStore } from "@/store/uiStore";
+import { useAuthStore } from "@/store/authStore";
 
 interface NavItem {
   id: string;
@@ -28,7 +29,25 @@ export default function MainSidebar() {
   const pathname = usePathname();
   const router = useRouter();
   const { currentUser } = useUserStore();
+  const { user: authUser } = useAuthStore(); // Get authenticated user from auth store
   const { isMobileChatWindowOpen } = useUIStore();
+
+  // Helper to get user data with proper typing
+  const getUserAvatar = (): string | undefined => {
+    return authUser?.avatar_url || (currentUser as any)?.avatar;
+  };
+  
+  const getUserName = (): string => {
+    return authUser?.full_name || (currentUser as any)?.name || "User";
+  };
+  
+  const getUserInitial = (): string => {
+    return getUserName().charAt(0).toUpperCase() || "U";
+  };
+  
+  const getUserStatus = (): "online" | "offline" | "away" | undefined => {
+    return (currentUser as any)?.status as "online" | "offline" | "away" | undefined;
+  };
 
   // Check if we're viewing a specific chat (hide mobile nav only in chat window)
   // Match /chat/1, /chat/2, etc. but NOT /chat alone
@@ -76,10 +95,10 @@ export default function MainSidebar() {
               title="Profile"
             >
               <Avatar
-                src={currentUser?.avatar}
-                alt={currentUser?.name || "User"}
+                src={getUserAvatar()}
+                alt={getUserName()}
                 size="sm"
-                status={currentUser?.status}
+                status={getUserStatus()}
               />
             </button>
           </div>
@@ -103,15 +122,15 @@ export default function MainSidebar() {
                 {item.id === "profile" ? (
                   <div className="flex flex-col items-center justify-center gap-1">
                     <div className="w-6 h-6 rounded-full overflow-hidden bg-[#00a884]/10 flex items-center justify-center">
-                      {currentUser?.avatar ? (
+                      {getUserAvatar() ? (
                         <img
-                          src={currentUser.avatar}
+                          src={getUserAvatar() || ""}
                           alt="Profile"
                           className="w-full h-full object-cover"
                         />
                       ) : (
                         <div className="w-full h-full bg-gradient-to-br from-blue-500 to-purple-500 flex items-center justify-center text-white text-xs font-semibold">
-                          {currentUser?.name?.charAt(0).toUpperCase() || "U"}
+                          {getUserInitial()}
                         </div>
                       )}
                     </div>

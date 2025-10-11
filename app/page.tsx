@@ -1,25 +1,33 @@
 "use client";
 
 import { useRouter } from "next/navigation";
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { useUserStore } from "@/store/userStore";
+import { useAuthStore } from "@/store/authStore";
 
 export default function Home() {
   const router = useRouter();
-  const { currentUser } = useUserStore();
+  const { currentUser, isHydrated } = useUserStore();
+  const { isAuthenticated } = useAuthStore();
+  const [isChecking, setIsChecking] = useState(true);
 
   useEffect(() => {
-    // Check if user is logged in
-    const savedUser = localStorage.getItem("convoSpaceUser");
-    
-    if (currentUser || savedUser) {
-      // User is logged in, go to chat
+    // Wait for store to hydrate before checking auth
+    if (!isHydrated) {
+      return;
+    }
+
+    // Check authentication state
+    if (isAuthenticated && currentUser) {
+      // User is logged in, redirect to chat
       router.push("/chat");
     } else {
-      // Not logged in, go to auth
+      // Not logged in, redirect to auth
       router.push("/auth");
     }
-  }, [router, currentUser]);
+    
+    setIsChecking(false);
+  }, [router, currentUser, isAuthenticated, isHydrated]);
 
   return (
     <main className="flex min-h-screen items-center justify-center bg-[#0b141a]">

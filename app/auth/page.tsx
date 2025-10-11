@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import PhoneInput from "@/components/auth/PhoneInput";
 import OTPInput from "@/components/auth/OTPInput";
@@ -8,6 +8,7 @@ import ProfileSetup from "@/components/auth/ProfileSetup";
 import ToastContainer, { useToastStore } from "@/components/common/ToastContainer";
 import { authApi } from "@/api/auth";
 import { useAuthStore } from "@/store/authStore";
+import { useUserStore } from "@/store/userStore";
 
 type AuthStep = "phone" | "otp" | "profile";
 
@@ -19,7 +20,15 @@ export default function AuthPage() {
   const [isLoading, setIsLoading] = useState(false);
   const router = useRouter();
   const { addToast } = useToastStore();
-  const { setAuth } = useAuthStore();
+  const { setAuth, isAuthenticated } = useAuthStore();
+  const { currentUser, isHydrated } = useUserStore();
+
+  // Redirect to chat if already authenticated
+  useEffect(() => {
+    if (isHydrated && isAuthenticated && currentUser) {
+      router.push("/chat");
+    }
+  }, [isHydrated, isAuthenticated, currentUser, router]);
 
   const handlePhoneSubmit = async (phone: string) => {
     setIsLoading(true);

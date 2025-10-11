@@ -10,9 +10,10 @@ import { User } from "@/types/chat";
 interface ChatHeaderProps {
   user: User;
   onBack?: () => void;
+  isTyping?: boolean;
 }
 
-export default function ChatHeader({ user, onBack }: ChatHeaderProps) {
+export default function ChatHeader({ user, onBack, isTyping = false }: ChatHeaderProps) {
   const [showSearch, setShowSearch] = useState(false);
   const router = useRouter();
 
@@ -56,7 +57,11 @@ export default function ChatHeader({ user, onBack }: ChatHeaderProps) {
         <div>
           <h2 className="font-medium text-white">{user.name}</h2>
           <p className="text-xs text-gray-400">
-            {user.status === "online" ? "online" : `last seen recently`}
+            {isTyping ? (
+              <span className="text-[#00a884] font-medium animate-pulse">typing...</span>
+            ) : (
+              user.status === "online" ? "online" : `last seen recently`
+            )}
           </p>
         </div>
       </div>

@@ -2,12 +2,16 @@
 
 import { ReactNode } from "react";
 import MainSidebar from "./MainSidebar";
+import { useSocket } from "@/hooks/useSocket";
 
 interface AppLayoutProps {
   children: ReactNode;
 }
 
 export default function AppLayout({ children }: AppLayoutProps) {
+  // Initialize socket connection at app level so it persists across pages
+  useSocket();
+  
   return (
     <div className="flex h-screen overflow-hidden bg-[#0b141a]">
       {/* Main Navigation Sidebar */}

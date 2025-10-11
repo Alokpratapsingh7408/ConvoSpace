@@ -1,33 +1,115 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect, useRef } from "react";
 import { FiSend, FiPaperclip, FiSmile } from "react-icons/fi";
 import { BsMic } from "react-icons/bs";
 import { useChatStore } from "@/store/chatStore";
-import { Message } from "@/types/chat";
+import { useAuthStore } from "@/store/authStore";
+import { useSocket } from "@/hooks/useSocket";
 import IconButton from "../common/IconButton";
 
 interface ChatInputProps {
-  chatId: string;
+  chatId: number;
+  receiverId: number;
 }
 
-export default function ChatInput({ chatId }: ChatInputProps) {
+export default function ChatInput({ chatId, receiverId }: ChatInputProps) {
   const [message, setMessage] = useState("");
-  const { addMessage } = useChatStore();
+  const [isTyping, setIsTyping] = useState(false);
+  const typingTimeoutRef = useRef<NodeJS.Timeout>();
+  
+  const { sendMessage: sendMessageAPI } = useChatStore();
+  const { user: currentUser } = useAuthStore();
+  const { sendMessage: sendMessageSocket, startTyping, stopTyping, isConnected } = useSocket();
 
-  const handleSend = () => {
-    if (message.trim()) {
-      const newMessage: Message = {
-        id: `msg-${Date.now()}`,
-        chatId,
-        senderId: "1", // Current user ID (mock)
-        content: message,
-        timestamp: new Date(),
-        status: "sent",
-      };
+  // Handle typing indicator - OPTIMIZED
+  useEffect(() => {
+    // Clear existing timeout
+    if (typingTimeoutRef.current) {
+      clearTimeout(typingTimeoutRef.current);
+    }
 
-      addMessage(chatId, newMessage);
+    if (message.length > 0) {
+      // Start typing if not already typing
+      if (!isTyping) {
+        console.log('⌨️ [INPUT] Starting typing - Chat:', chatId, 'Receiver:', receiverId);
+        setIsTyping(true);
+        startTyping(chatId, receiverId);
+      }
+
+      // Set timeout to stop typing after 3 seconds of inactivity
+      typingTimeoutRef.current = setTimeout(() => {
+        console.log('⌨️ [INPUT] Stopping typing (timeout) - Chat:', chatId, 'Receiver:', receiverId);
+        setIsTyping(false);
+        stopTyping(chatId, receiverId);
+      }, 3000);
+    } else if (isTyping) {
+      // Message is empty, stop typing immediately
+      console.log('⌨️ [INPUT] Stopping typing (empty message) - Chat:', chatId, 'Receiver:', receiverId);
+      setIsTyping(false);
+      stopTyping(chatId, receiverId);
+    }
+
+    return () => {
+      if (typingTimeoutRef.current) {
+        clearTimeout(typingTimeoutRef.current);
+      }
+    };
+    // Only depend on message changes, not isTyping
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [message]);
+
+  // Cleanup typing indicator on unmount
+  useEffect(() => {
+    return () => {
+      if (isTyping) {
+        stopTyping(chatId, receiverId);
+      }
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  const handleSend = async () => {
+    if (message.trim() && currentUser) {
+      const messageText = message.trim();
       setMessage("");
+
+      // Stop typing indicator immediately
+      if (isTyping) {
+        setIsTyping(false);
+        stopTyping(chatId, receiverId);
+      }
+
+      try {
+        // Try Socket.IO first (real-time)
+        if (isConnected) {
+          // Add message optimistically to local state
+          const optimisticMessage = {
+            id: Date.now(), // Temporary ID
+            chatId: chatId,
+            senderId: currentUser.id,
+            content: messageText,
+            timestamp: new Date(),
+            status: 'sent' as const,
+            messageType: 'text' as const,
+          };
+          
+          // Add to store immediately for instant feedback
+          const { addMessage } = useChatStore.getState();
+          addMessage(chatId, optimisticMessage);
+          
+          // Send via socket
+          sendMessageSocket(chatId, receiverId, messageText);
+        } else {
+          // Fallback to REST API (will add message via response)
+          await sendMessageAPI(chatId, receiverId, messageText);
+        }
+      } catch (error) {
+        console.error('Failed to send message:', error);
+        alert('Failed to send message. Please try again.');
+        // Restore message on error
+        setMessage(messageText);
+      }
     }
   };
 

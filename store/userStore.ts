@@ -10,6 +10,7 @@ interface UserState {
   login: (user: User) => void;
   logout: () => void;
   setHydrated: () => void;
+  updateUserStatus: (userId: number, status: 'online' | 'offline', lastSeenAt?: string) => void;
 }
 
 export const useUserStore = create<UserState>()(
@@ -26,6 +27,20 @@ export const useUserStore = create<UserState>()(
       logout: () => set({ currentUser: null, isAuthenticated: false }),
 
       setHydrated: () => set({ isHydrated: true }),
+
+      updateUserStatus: (userId, status, lastSeenAt) => set((state) => {
+        // Update current user status if it's them
+        if (state.currentUser && state.currentUser.id === userId) {
+          return {
+            currentUser: {
+              ...state.currentUser,
+              status,
+              lastSeen: lastSeenAt ? new Date(lastSeenAt) : undefined,
+            },
+          };
+        }
+        return state;
+      }),
     }),
     {
       name: "convoSpaceUser",

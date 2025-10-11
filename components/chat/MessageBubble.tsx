@@ -1,14 +1,21 @@
 import { Message } from "@/types/chat";
 import { formatTime } from "@/lib/utils";
-import { FiCheck } from "react-icons/fi";
+import { FiCheck, FiUser } from "react-icons/fi";
 import { IoCheckmarkDone } from "react-icons/io5";
 
 interface MessageBubbleProps {
   message: Message;
   isOwnMessage: boolean;
+  showAvatar?: boolean;
+  avatarUrl?: string;
 }
 
-export default function MessageBubble({ message, isOwnMessage }: MessageBubbleProps) {
+export default function MessageBubble({ 
+  message, 
+  isOwnMessage, 
+  showAvatar = false,
+  avatarUrl 
+}: MessageBubbleProps) {
   const statusIcon = {
     sent: <FiCheck className="w-4 h-4" />,
     delivered: <IoCheckmarkDone className="w-4 h-4" />,
@@ -16,7 +23,26 @@ export default function MessageBubble({ message, isOwnMessage }: MessageBubblePr
   };
 
   return (
-    <div className={`flex ${isOwnMessage ? "justify-end" : "justify-start"} px-2 mb-1`}>
+    <div className={`flex ${isOwnMessage ? "justify-end" : "justify-start"} px-2 mb-1 gap-2`}>
+      {/* Avatar for received messages */}
+      {!isOwnMessage && (
+        <div className="flex-shrink-0" style={{ width: '32px' }}>
+          {showAvatar && (
+            avatarUrl ? (
+              <img
+                src={avatarUrl}
+                alt="User"
+                className="w-8 h-8 rounded-full object-cover"
+              />
+            ) : (
+              <div className="w-8 h-8 rounded-full bg-[#2a3942] flex items-center justify-center">
+                <FiUser className="text-gray-400 text-sm" />
+              </div>
+            )
+          )}
+        </div>
+      )}
+
       <div
         className={`max-w-[65%] md:max-w-[45%] rounded-lg px-3 py-2 shadow-sm ${
           isOwnMessage

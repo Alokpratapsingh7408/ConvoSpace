@@ -22,9 +22,9 @@ export default function ChatContainer({ isMobile = false }: ChatContainerProps) 
   const [searchQuery, setSearchQuery] = useState("");
   const [isSearchOpen, setIsSearchOpen] = useState(false);
   
-  // Extract chat ID from URL on initial load
+  // Extract chat ID from URL on initial load and convert to number
   const chatIdMatch = pathname?.match(/^\/chat\/(.+)$/);
-  const urlChatId = chatIdMatch ? chatIdMatch[1] : null;
+  const urlChatId = chatIdMatch ? Number(chatIdMatch[1]) : null;
   
   console.log('ChatContainer Debug:', { isMobile, pathname, urlChatId, selectedChatId });
 
@@ -51,7 +51,7 @@ export default function ChatContainer({ isMobile = false }: ChatContainerProps) 
     };
   }, [isMobile, selectedChatId, setMobileChatWindowOpen]);
 
-  const handleChatSelect = (chatId: string) => {
+  const handleChatSelect = (chatId: number) => {
     // Both mobile and desktop: Use state, update URL WITHOUT navigation
     selectChat(chatId);
     // Update URL for deep linking support without triggering re-render
